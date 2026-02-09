@@ -1,6 +1,4 @@
 # Sensitive configuration files
 .env
 .env.*
-config.json
-config.js          # only if it contains your bot token
 tokens.json
