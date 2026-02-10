@@ -38,7 +38,7 @@ loadMusicEvents(player);
 client.login(process.env.DISCORD_TOKEN);
 
 process.on("SIGINT", async () => {
-  console.log("Shutting down... saving data");
+  log.success("Shutting down... saving data");
   await require("fs").promises.writeFile(
     "./data/users.json",
     JSON.stringify(client.usersData, null, 2),
