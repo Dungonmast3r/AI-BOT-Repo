@@ -7,6 +7,14 @@ module.exports = {
   xpMin: 5,
   xpMax: 15,
 
+  tempVoice: {
+    enabledGuilds: [], 
+    triggerChannelId: "1470820618386669590",
+    categoryId: "1470820121751851049",
+    channelPrefix: "🔒 {username}'s Room",
+    autoDeleteDelay: 30000,
+  },
+
   personalities: [
     {
       name: "Savage Dungeon Master",
