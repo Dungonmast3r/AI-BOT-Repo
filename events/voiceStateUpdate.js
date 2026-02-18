@@ -1,35 +1,44 @@
 // events/voiceStateUpdate.js
 const { Events } = require('discord.js');
-const config = require('../config');
+const config = require('../config'); // <--- Load from config file
 const log = require('../handlers/logger');
 
 module.exports = {
   name: Events.voiceStateUpdate,
   async execute(oldState, newState) {
     const { guild, member, channel: newChannel } = newState;
-    const { channel: oldChannel } = oldState; // oldState has the previous channel
+    const { channel: oldChannel } = oldState;
+
+    // Load settings from config.js
+    const { tempVoice } = config;
+    const { enabledGuilds, triggerChannelId, categoryId, channelPrefix, autoDeleteDelay } = tempVoice;
+
+    log.debug(`Voice update in guild ${guild.id} (${guild.name}): ${member.user.tag} moved from ${oldChannel?.name || 'none'} → ${newChannel?.name || 'none'}`);
 
     // Only run if feature is enabled for this guild
-    if (!config.tempVoice.enabledGuilds.includes(guild.id)) return;
+    if (!enabledGuilds.includes(guild.id)) {
+      log.debug(`Temp voice disabled for guild ${guild.id}`);
+      return;
+    }
 
-    const triggerChannelId = config.tempVoice.triggerChannelId;
+    log.debug(`Temp voice enabled. Trigger channel ID: ${triggerChannelId}`);
 
     // User JOINED the trigger channel (and wasn't already in it)
     if (newChannel?.id === triggerChannelId && oldChannel?.id !== triggerChannelId) {
-      try {
-        log.info(`User ${member.user.tag} joined trigger channel in ${guild.name}`);
+      log.info(`Trigger detected: ${member.user.tag} joined trigger channel in ${guild.name}`);
 
+      try {
         // Create new temp channel
         const channelOptions = {
-          name: config.tempVoice.channelPrefix.replace('{username}', member.user.username),
+          name: channelPrefix.replace('{username}', member.user.username),
           type: 2, // voice channel
-          parent: config.tempVoice.categoryId || newChannel.parentId,
+          parent: categoryId || newChannel.parentId,
           permissionOverwrites: [
             // Copy permissions from trigger channel
             ...newChannel.permissionOverwrites.cache.map(overwrite => ({
               id: overwrite.id,
-              allow: overwrite.allow,
-              deny: overwrite.deny,
+              allow: overwrite.allow.toArray(),
+              deny: overwrite.deny.toArray(),
             })),
             // Give the user full control
             {
@@ -54,17 +63,21 @@ module.exports = {
 
         // Log & welcome message
         log.success(`Created temp channel "${tempChannel.name}" for ${member.user.tag}`);
-        tempChannel.send(`Welcome, ${member}! This is your private room.\nIt will auto-delete when empty.`);
+        await tempChannel.send(`Welcome, ${member}! This is your private room.\nIt will auto-delete when empty.`);
 
         // Auto-delete when empty
         const cleanup = () => {
           if (tempChannel.members.size === 0) {
             setTimeout(async () => {
               if (tempChannel.members.size === 0) {
-                await tempChannel.delete().catch(err => log.error('Failed to delete temp channel:', err));
-                log.info(`Deleted empty temp channel: ${tempChannel.name}`);
+                try {
+                  await tempChannel.delete();
+                  log.info(`Deleted empty temp channel: ${tempChannel.name}`);
+                } catch (err) {
+                  log.error('Failed to delete temp channel:', err);
+                }
               }
-            }, config.tempVoice.autoDeleteDelay);
+            }, autoDeleteDelay);
           }
         };
 
@@ -78,8 +91,9 @@ module.exports = {
     }
 
     // Optional: Cleanup if user leaves the trigger channel (rarely needed)
-    // if (oldChannel?.id === triggerChannelId && (!newChannel || newChannel.id !== triggerChannelId)) {
-    //   // Add logic here if you want to do something when user leaves without joining a temp channel
-    // }
+    if (oldChannel?.id === triggerChannelId && (!newChannel || newChannel.id !== triggerChannelId)) {
+      log.debug(`User ${member.user.tag} left trigger channel`);
+      // Add logic here if needed
+    }
   },
 };

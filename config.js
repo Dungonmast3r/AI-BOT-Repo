@@ -8,7 +8,7 @@ module.exports = {
   xpMax: 15,
 
   tempVoice: {
-    enabledGuilds: [], 
+    enabledGuilds: ["1319053191819558952"], 
     triggerChannelId: "1470820618386669590",
     categoryId: "1470820121751851049",
     channelPrefix: "🔒 {username}'s Room",
