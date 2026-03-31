@@ -51,7 +51,7 @@ cd AI-BOT
 # 2. Install dependencies
 npm install
 
-# 3. Create and fill config.js
+# 3. Create and fill config.js / .env file
 #    (copy from config.example.js if it exists, or create it)
 cp config.example.js config.js   # if example exists
 
