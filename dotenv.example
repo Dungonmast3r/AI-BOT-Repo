@@ -1,0 +1,35 @@
+# ==================== BOT CONFIGURATION ====================
+
+# Discord Bot Token (Required)
+DISCORD_TOKEN=your_discord_bot_token_here
+
+# Bot Prefix (for prefix commands, if you're still using them)
+BOT_PREFIX=!
+
+# ==================== API KEYS ====================
+
+# Groq API Key (for AI features)
+GROQ_API_KEY=gsk_your_groq_api_key_here
+
+# YouTube Cookie (for better music quality / avoiding rate limits)
+# Get this by logging into YouTube in your browser and copying the cookie
+YOUTUBE_COOKIE=your_youtube_cookie_here
+
+# Spotify Credentials (for Spotify track support in music)
+SPOTIFY_CLIENT_ID=your_spotify_client_id_here
+SPOTIFY_CLIENT_SECRET=your_spotify_client_secret_here
+
+# ==================== OPTIONAL / FUTURE FEATURES ====================
+
+# Leveling System
+LEVEL_CHANNEL_ID=your_level_announcement_channel_id_here
+
+# Temp Voice Channels
+TEMP_VOICE_TRIGGER_CHANNEL=your_join_to_create_channel_id_here
+TEMP_VOICE_CATEGORY=your_temp_category_id_here
+
+# MongoDB / Database (if you plan to use it later)
+MONGODB_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/botname
+
+# Logging / Webhook (optional)
+ERROR_WEBHOOK_URL=your_discord_webhook_url_here
