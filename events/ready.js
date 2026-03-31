@@ -1,5 +1,5 @@
 // events/ready.js
-const { Events } = require("discord.js");
+const { Events, ActivityType } = require("discord.js");
 const fs = require("node:fs/promises");
 const {
   loadCommands,
@@ -16,6 +16,7 @@ module.exports = {
   async execute(client) {
     await extractor();
     log.success(`Logged in as ${client.user.tag} 🚀`);
+
     const PlayerContext = require("../structures/PlayerContext");
     client.playerCtx = new PlayerContext(client);
     log.success("Player context initialized");
@@ -43,6 +44,47 @@ module.exports = {
       }
       return originalEmit.apply(process, arguments);
     };
+
+    // ────────────────────────────────────────────────
+    // Rotating Status
+    // ────────────────────────────────────────────────
+    const statuses = [
+      { name: "with AI 🤖", type: ActivityType.Playing },
+      { name: `music in ${client.guilds.cache.size} servers`, type: ActivityType.Listening },
+      { name: "your commands 💬", type: ActivityType.Watching },
+      { name: "built by Dungonmast3r", type: ActivityType.Playing },
+      { name: "thinking with Groq...", type: ActivityType.Competing },
+      { name: `in ${client.channels.cache.size} channels`, type: ActivityType.Watching },
+      { name: "chilling 🌌", type: ActivityType.Playing },
+    ];
+
+    let index = 0;
+
+    function updateStatus() {
+      const current = statuses[index];
+
+      // Update dynamic values (server count, channel count, etc.)
+      const finalName = current.name
+        .replace("${client.guilds.cache.size}", client.guilds.cache.size)
+        .replace("${client.channels.cache.size}", client.channels.cache.size);
+
+      client.user.setPresence({
+        activities: [{
+          name: finalName,
+          type: current.type,
+        }],
+        status: "online",        // Change to "idle", "dnd", or "invisible" if you want
+      });
+
+      log.info(`🔄 Status updated → ${finalName}`);
+      index = (index + 1) % statuses.length;
+    }
+
+    // Set first status immediately
+    updateStatus();
+
+    // Rotate status every 30 seconds
+    setInterval(updateStatus, 30000);
 
     // ────────────────────────────────────────────────
     // Load & register commands
@@ -94,7 +136,7 @@ module.exports = {
 
     client.usersData = client.usersData || {};
 
-    // Auto-save every 30 seconds (correct promise-style)
+    // Auto-save every 30 seconds
     setInterval(async () => {
       try {
         const dataToSave = JSON.stringify(client.usersData, null, 2);
