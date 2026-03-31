@@ -1,55 +1,43 @@
 // events/messageCreate.js
-const { EmbedBuilder } = require('discord.js');
-const config = require('../config');
-const { getLevel, xpForNextLevel } = require('../utils/helpers');
-const log = require('../handlers/logger'); // Logger import
+const { Events } = require("discord.js");
+const levelManager = require("../utils/levelManager");
+const config = require("../config"); // add levelChannelId later if you want
+
+const cooldowns = new Map();
 
 module.exports = {
-  name: 'messageCreate',
-  async execute(message, client) {
-    if (message.author.bot || !message.guild) return;
+  name: Events.MessageCreate,
+  async execute(message) {
+    if (message.author.bot || message.guild === null) return;
 
-    const userId = message.author.id;
     const now = Date.now();
+    const cooldown = cooldowns.get(message.author.id);
 
-    // Cooldown check
-    if (client.cooldowns.has(userId) && now - client.cooldowns.get(userId) < config.xpCooldown) {
-      return;
-    }
-    client.cooldowns.set(userId, now);
+    if (cooldown && now - cooldown < 60000) return; // 60 second cooldown
 
-    // Initialize user data if missing
-    if (!client.usersData[userId]) {
-      client.usersData[userId] = { xp: 0, level: 0 };
-      log.info(`Initialized new user data for ${message.author.tag} (${userId})`);
-    }
+    cooldowns.set(message.author.id, now);
 
-    // Give random XP
-    const xpGain = Math.floor(Math.random() * (config.xpMax - config.xpMin + 1)) + config.xpMin;
-    client.usersData[userId].xp += xpGain;
+    // Give random XP between 15-25 (like MEE6)
+    const xpToAdd = Math.floor(Math.random() * 11) + 15;
 
-    log.debug(`Gave ${xpGain} XP to ${message.author.tag} (total: ${client.usersData[userId].xp})`);
+    const result = levelManager.addXP(
+      message.guild.id,
+      message.author.id,
+      xpToAdd,
+    );
 
-    // Calculate level
-    const oldLevel = client.usersData[userId].level;
-    const newLevel = getLevel(client.usersData[userId].xp);
+    if (result.leveledUp) {
+      const levelChannel = message.guild.channels.cache.get(
+        config.levelChannelId,
+      ); // optional
 
-    if (newLevel > oldLevel) {
-      client.usersData[userId].level = newLevel;
+      const msg = `🎉 **${message.author}** just leveled up to **Level ${result.newLevel}**!`;
 
-      log.success(`${message.author.tag} leveled up! Level ${oldLevel} → ${newLevel}`);
-
-      const embed = new EmbedBuilder()
-        .setTitle(`${message.author.username} leveled up! 🎉`)
-        .setDescription(`**Level ${oldLevel} → Level ${newLevel}**\nXP: ${client.usersData[userId].xp} / ${xpForNextLevel(newLevel)}`)
-        .setColor(0xFFD700)
-        .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
-        .setFooter({ text: 'GGWP | Dungeon Master approves' })
-        .setTimestamp();
-
-      await message.channel.send({ embeds: [embed] }).catch((err) => {
-        log.error('Failed to send level-up embed:', err.message);
-      });
+      if (levelChannel) {
+        levelChannel.send(msg);
+      } else {
+        message.channel.send(msg);
+      }
     }
   },
 };

@@ -1,39 +1,30 @@
-// commands/info/leaderboard.js
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const levelManager = require("../../utils/levelManager");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('leaderboard')
-    .setDescription('See the top grinders in the server 🎮🏆'),
+    .setName("leaderboard")
+    .setDescription("Show the top 10 users by level"),
 
   async execute(interaction) {
-    await interaction.deferReply();
+    const top = levelManager.getLeaderboard(interaction.guild.id, 10);
 
-    const client = interaction.client;
-    const sorted = Object.entries(client.usersData || {})
-      .map(([id, data]) => ({ id, ...data }))
-      .sort((a, b) => b.level - a.level || b.xp - a.xp)
-      .slice(0, 10);
-
-    if (sorted.length === 0) {
-      return interaction.editReply("Nobody has grinded yet... sadge 😔 Start chatting!");
+    if (top.length === 0) {
+      return interaction.reply("No one has earned XP yet!");
     }
 
-    let description = '';
-    for (let i = 0; i < sorted.length; i++) {
-      const entry = sorted[i];
-      const user = await client.users.fetch(entry.id).catch(() => null);
-      const name = user ? user.username : `User ${entry.id.slice(0,8)}...`;
-      description += `${i + 1}. **${name}** — Lv ${entry.level} (${entry.xp} XP)\n`;
-    }
+    let description = "";
+    top.forEach((entry, index) => {
+      const user = interaction.guild.members.cache.get(entry.userId);
+      description += `${index + 1}. ${user ? user.user.tag : "Unknown User"} — Level ${entry.level} (${entry.xp} XP)\n`;
+    });
 
     const embed = new EmbedBuilder()
-      .setTitle('🏆 Server XP Leaderboard 🎮')
+      .setTitle(`🏆 Level Leaderboard — ${interaction.guild.name}`)
       .setDescription(description)
-      .setColor(0xFFD700)
-      .setFooter({ text: `Top ${sorted.length} grinders | Updated ${new Date().toLocaleTimeString()}` })
+      .setColor(0xffaa00)
       .setTimestamp();
 
-    await interaction.editReply({ embeds: [embed] });
+    await interaction.reply({ embeds: [embed] });
   },
 };

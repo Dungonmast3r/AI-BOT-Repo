@@ -14,6 +14,7 @@ const {
 const config = require("./config");
 const { loadEvents, loadMusicEvents } = require("./handlers/eventHandler");
 const { Player } = require("discord-player");
+const levelManager = require("./utils/levelManager");
 
 const client = new Client({
   intents: [
@@ -34,8 +35,12 @@ client.conversationHistory = new Map();
 
 loadEvents(client);
 loadMusicEvents(player);
+levelManager.init();
 
 client.login(process.env.DISCORD_TOKEN);
+
+const startVoiceXP = require("./handlers/voiceXP");
+startVoiceXP(client, config); // Pass client and config
 
 process.on("SIGINT", async () => {
   log.success("Shutting down... saving data");

@@ -14,7 +14,7 @@
     "@discord-player/extractor": "^7.1.0",
     "@google/generative-ai": "^0.24.1",
     "axios": "^1.13.4",
-    "better-sqlite3": "^12.6.2",
+    "better-sqlite3": "^12.8.0",
     "discord-player": "^7.1.0",
     "discord-player-deezer": "^2.5.0",
     "discord-player-googlevideo": "^0.2.2",
