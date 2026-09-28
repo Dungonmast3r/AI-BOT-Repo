@@ -10,12 +10,14 @@ module.exports = {
   async execute(message) {
     if (message.author.bot || message.guild === null) return;
 
+    const settings = require('../utils/guildSettings').getStore().get(message.guild.id);
+    if (!settings.levelingEnabled) return;
     const now = Date.now();
-    const cooldown = cooldowns.get(message.author.id);
+    const cooldown = cooldowns.get(`${message.guild.id}:${message.author.id}`);
 
     if (cooldown && now - cooldown < 60000) return; // 60 second cooldown
 
-    cooldowns.set(message.author.id, now);
+    cooldowns.set(`${message.guild.id}:${message.author.id}`, now);
 
     // Give random XP between 15-25 (like MEE6)
     const xpToAdd = Math.floor(Math.random() * 11) + 15;
@@ -28,15 +30,15 @@ module.exports = {
 
     if (result.leveledUp) {
       const levelChannel = message.guild.channels.cache.get(
-        config.levelChannelId,
+        settings.levelChannelId,
       ); // optional
 
       const msg = `🎉 **${message.author}** just leveled up to **Level ${result.newLevel}**!`;
 
       if (levelChannel) {
-        levelChannel.send(msg);
+        levelChannel.send(msg).catch(() => {});
       } else {
-        message.channel.send(msg);
+        message.channel.send(msg).catch(() => {});
       }
     }
   },

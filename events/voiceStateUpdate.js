@@ -24,7 +24,7 @@ module.exports = {
       autoDeleteDelay = 5000,
     } = tempVoice || {};
 
-    if (!enabledGuilds?.includes(guild.id)) return;
+
 
     // ========================
     // VOICE XP SYSTEM
@@ -60,6 +60,7 @@ module.exports = {
     // TEMP CHANNEL SYSTEM
     // ========================
     if (
+      enabledGuilds?.includes(guild.id) &&
       newChannel?.id === triggerChannelId &&
       oldChannel?.id !== triggerChannelId
     ) {
