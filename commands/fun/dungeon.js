@@ -22,7 +22,7 @@ module.exports = {
     await interaction.deferReply();
 
     const userMsg = interaction.options.getString('message');
-    const userId = interaction.user.id;
+    const userId = `${interaction.guildId}:${interaction.user.id}`;
 
     //log.info(`Dungeon command used by ${interaction.user.tag} (${userId}): "${userMsg}"`);
 

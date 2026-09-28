@@ -98,24 +98,6 @@ module.exports = {
         time: 15 * 60 * 1000, // longer timeout
       });
 
-      const collector = interaction.channel.createMessageComponentCollector({
-        filter: (i) => i.user.id === interaction.user.id,
-        time: 15 * 60 * 1000,
-      });
-
-      collector.on("collect", async (i) => {
-        // your play logic here
-        await i.update({
-          content: `Playing ${i.values[0]}...`,
-          components: [],
-        });
-      });
-
-      collector.on("end", (collected, reason) => {
-        if (reason === "time") {
-          interaction.followUp({ content: "Menu timed out.", ephemeral: true });
-        }
-      });
     } catch (err) {
       log.error("Radio search failed:", err.message);
       await interaction.editReply({

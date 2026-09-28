@@ -37,6 +37,8 @@ loadEvents(client);
 loadMusicEvents(player);
 levelManager.init();
 
+require('./utils/guildSettings').getStore();
+require('./dashboard/server').startDashboard(client);
 client.login(process.env.DISCORD_TOKEN);
 
 const startVoiceXP = require("./handlers/voiceXP");

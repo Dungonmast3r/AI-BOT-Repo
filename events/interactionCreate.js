@@ -1,10 +1,17 @@
 const { useMainPlayer } = require("discord-player");
-const { Events, ButtonInteraction } = require("discord.js");
+const { Events, ButtonInteraction, EmbedBuilder } = require("discord.js");
+const log = require('../handlers/logger');
 const OWNER_IDS = ["162098920460124160"]; // add your real ID(s) here
 
 module.exports = {
   name: Events.InteractionCreate,
   async execute(interaction) {
+    if (interaction.isChatInputCommand() || interaction.customId?.startsWith('music_') || interaction.customId === 'radio_select') {
+      try {
+        const denied = await require('../utils/settingsPolicy').denial(interaction);
+        if (denied) return interaction.reply({ content: denied, ephemeral: true });
+      } catch { return interaction.reply({ content: 'Unable to verify your permissions. Try again.', ephemeral: true }); }
+    }
     // Handle chat commands (your existing logic)
     if (interaction.isChatInputCommand()) {
       const command = interaction.client.commands.get(interaction.commandName);
@@ -36,7 +43,7 @@ module.exports = {
       return; // Stop here for commands
     }
 
-    if (!interaction.isButton()) return;
+
     // Handle radio station selection
     if (
       interaction.isStringSelectMenu() &&
@@ -95,6 +102,7 @@ module.exports = {
       }
     }
 
+    if (!interaction.isButton()) return;
     const customId = interaction.customId;
 
     if (!customId.startsWith("music_")) return;

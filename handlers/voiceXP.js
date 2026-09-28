@@ -6,6 +6,8 @@ module.exports = (client, config) => {
 
   setInterval(() => {
     client.guilds.cache.forEach(async (guild) => {
+      const settings = require('../utils/guildSettings').getStore().get(guild.id);
+      if (!settings.levelingEnabled || !settings.voiceXpEnabled) return;
       const earningUsers = levelManager.voiceIntervals.get(guild.id);
       if (!earningUsers || earningUsers.size === 0) return;
 
@@ -22,7 +24,7 @@ module.exports = (client, config) => {
         const result = levelManager.addXP(guild.id, userId, xpToAdd);
 
         if (result.leveledUp) {
-          const levelChannel = guild.channels.cache.get(config.levelChannelId);
+          const levelChannel = guild.channels.cache.get(settings.levelChannelId);
 
           const announceMsg = `🎉 **${member.user}** just leveled up to **Level ${result.newLevel}** from voice activity!`;
 

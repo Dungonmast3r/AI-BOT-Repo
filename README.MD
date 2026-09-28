@@ -1,5 +1,9 @@
 # AI-BOT
 
+## Server settings dashboard
+
+Dungeon includes an optional web dashboard with Discord login and per-server AI, music/DJ, and leveling controls. See [dashboard setup and security notes](DASHBOARD.md). Enable it with `DASHBOARD_ENABLED=true` after configuring OAuth credentials; run checks with `npm test`.
+
 **A powerful, modular Discord bot built with JavaScript** — featuring music playback, custom commands, event handling, and AI-enhanced functionality.
 
 ![Discord.js](https://img.shields.io/badge/Discord.js-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)
